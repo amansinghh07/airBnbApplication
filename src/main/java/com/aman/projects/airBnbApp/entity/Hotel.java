@@ -1,5 +1,6 @@
 package com.aman.projects.airBnbApp.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +31,13 @@ public class Hotel {
     @Embedded
     private HotelContactInfo hotelContactInfo;
     @Column(nullable = false)
+    @JsonProperty("active")
     private boolean isActive;
-    @OneToMany(mappedBy = "hotel",fetch = FetchType.LAZY)
-    private List<Room> roomList;
+/*    @OneToMany(mappedBy = "hotel",fetch = FetchType.LAZY)
+    private List<Room> roomList;*/
+    @ManyToOne
+    private User owner;
+    @OneToMany(mappedBy = "hotel")
+    private List<Room>rooms;
+
 }

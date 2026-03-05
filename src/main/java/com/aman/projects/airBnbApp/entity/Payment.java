@@ -21,4 +21,6 @@ public class Payment {
     private PaymentStatus paymentStatus;
     @Column(nullable = false,precision =10,scale = 2)
     private BigDecimal amount;
+    @OneToOne(mappedBy = "payment")
+    private Booking booking;
 }
