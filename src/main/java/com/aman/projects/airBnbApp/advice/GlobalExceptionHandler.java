@@ -1,10 +1,13 @@
 package com.aman.projects.airBnbApp.advice;
 
 import com.aman.projects.airBnbApp.exceptions.ResourceNotFoundException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,8 +27,32 @@ public class GlobalExceptionHandler {
                 build();
         return buildErrorResponseEntity(apiError);
     }
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError>handleAuthenticException(AuthenticationException ex){
+        ApiError apiError=ApiError.builder().message(ex.getLocalizedMessage())
+                .httpStatus( HttpStatus.UNAUTHORIZED)
+                .build();
+        return new ResponseEntity<>(apiError,HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiError>handleJwtException(JwtException ex){
+        ApiError apiError=ApiError.builder().message(ex.getLocalizedMessage())
+                .httpStatus( HttpStatus.UNAUTHORIZED)
+                .build();
+        return new ResponseEntity<>(apiError,HttpStatus.UNAUTHORIZED);
+    }
+        @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError>handleAccessDeniedException(AccessDeniedException ex){
+        ApiError apiError=ApiError.builder().message(ex.getLocalizedMessage())
+                .httpStatus(HttpStatus.FORBIDDEN)
+                .build();
+        return new ResponseEntity<>(apiError,HttpStatus.FORBIDDEN);
+    }
     private ResponseEntity<ApiResponse<?>> buildErrorResponseEntity(ApiError apiError){
-        return new ResponseEntity<>(new ApiResponse<>(apiError),apiError.getHttpStatus());
+        ApiResponse<?> response = new ApiResponse<>();
+        response.setApiError(apiError);
+
+        return new ResponseEntity<>(response, apiError.getHttpStatus());
     }
 
 }

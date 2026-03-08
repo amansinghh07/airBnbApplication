@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class ApiResponse<T> {
-    private LocalDateTime timeStamp;
-    private T data;
     private ApiError apiError;
+    private T data;
+    private LocalDateTime timeStamp;
     public ApiResponse(){
         this.timeStamp=LocalDateTime.now();
     }
@@ -17,6 +17,7 @@ public class ApiResponse<T> {
         this.data=data;
     }
     public ApiResponse(ApiError error){
+        this();
         this.apiError=error;
     }
 }

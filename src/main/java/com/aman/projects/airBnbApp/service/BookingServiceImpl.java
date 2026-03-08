@@ -6,11 +6,13 @@ import com.aman.projects.airBnbApp.dto.GuestDto;
 import com.aman.projects.airBnbApp.entity.*;
 import com.aman.projects.airBnbApp.entity.enums.BookingStatus;
 import com.aman.projects.airBnbApp.exceptions.ResourceNotFoundException;
+import com.aman.projects.airBnbApp.exceptions.UnAuthorizedException;
 import com.aman.projects.airBnbApp.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -70,6 +72,10 @@ public class BookingServiceImpl implements BookingService{
         log.info("Adding Guests for booking with id: {}", bookingId);
         Booking booking=bookingRepository.findById(bookingId).orElseThrow(
                 ()->new ResourceNotFoundException("Booking not found with id: "+bookingId));
+        User user=getCurrentUser();
+        if(!user.equals(booking.getUser())){
+         throw new UnAuthorizedException("Booking does not belong to id: "+user.getId());
+        }
         if(hasBookingExpired(booking)){
             throw new IllegalStateException("booking has Already Expired");
         }
@@ -90,9 +96,7 @@ public class BookingServiceImpl implements BookingService{
         return booking.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
     public User getCurrentUser(){
-        User user=new User();    // TODO: REMOVE DUMMY USER
-        user.setId(1L);
-        return user;
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
 

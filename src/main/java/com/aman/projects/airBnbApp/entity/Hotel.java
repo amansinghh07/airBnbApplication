@@ -35,7 +35,7 @@ public class Hotel {
     private boolean isActive;
 /*    @OneToMany(mappedBy = "hotel",fetch = FetchType.LAZY)
     private List<Room> roomList;*/
-    @ManyToOne
+    @ManyToOne(optional = false,fetch = FetchType.LAZY)
     private User owner;
     @OneToMany(mappedBy = "hotel")
     private List<Room>rooms;

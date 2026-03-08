@@ -7,12 +7,9 @@ import com.aman.projects.airBnbApp.dto.HotelSearchRequestDto;
 import com.aman.projects.airBnbApp.service.HotelService;
 import com.aman.projects.airBnbApp.service.InventoryService;
 import lombok.RequiredArgsConstructor;
-//import org.hibernate.query.Page;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/hotels")
