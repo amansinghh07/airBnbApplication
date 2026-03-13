@@ -1,6 +1,7 @@
 package com.aman.projects.airBnbApp.service;
 
 import com.aman.projects.airBnbApp.dto.BookingDto;
+import com.aman.projects.airBnbApp.dto.BookingReportDto;
 import com.aman.projects.airBnbApp.dto.BookingRequest;
 import com.aman.projects.airBnbApp.dto.GuestDto;
 import com.aman.projects.airBnbApp.entity.*;
@@ -19,13 +20,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.aman.projects.airBnbApp.utils.AppUtils.getCurrentUser;
 
 @Service
 @Slf4j
@@ -177,11 +184,47 @@ public class BookingServiceImpl implements BookingService{
 
     }
 
+    @Override
+    public List<BookingDto> getAllBookingByHotelId(Long hotelId) {
+        Hotel hotel=hotelRepository.findById(hotelId).orElseThrow(
+                ()->new ResourceNotFoundException("Hotel not found with ID: "+hotelId));
+        User user=getCurrentUser();
+        if(!user.getId().equals(hotel.getOwner().getId())){
+            throw new AccessDeniedException("User does not belong to this hotel");
+        }
+        log.info("Getting all the booking for hotel with ID: {}",hotel.getId());
+        List<Booking>bookingList=bookingRepository.findByHotel(hotel);
+        return bookingList.stream().map((element) -> modelMapper
+                .map(element, BookingDto.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    public BookingReportDto getHotelReport(long hotelId, LocalDate startDate, LocalDate endDate) {
+        Hotel hotel=hotelRepository.findById(hotelId).orElseThrow(
+                ()->new ResourceNotFoundException("Hotel not found with ID: "+hotelId));
+        User user=getCurrentUser();
+        if(!user.getId().equals(hotel.getOwner().getId())){
+            throw new AccessDeniedException("User does not belong to this hotel");
+        }
+        log.info("Getting the report for hotel with ID: {}",hotel.getId());
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+        List<Booking>bookingList=bookingRepository.findByHotelAndCreatedAtBetween(hotel,startDateTime,endDateTime);
+        long totalConfirmedBooking=bookingList.stream().filter
+                ((element) -> element.getBookingStatus()==BookingStatus.CONFIRMED)
+                .count();
+        BigDecimal totalRevenueOfConfirmedBooking=bookingList.stream()
+                .filter((ele)->ele.getBookingStatus()==BookingStatus.CONFIRMED)
+                .map(Booking::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal avgRevenue=totalConfirmedBooking==0?BigDecimal.ZERO:
+                totalRevenueOfConfirmedBooking.divide(BigDecimal.valueOf(totalConfirmedBooking)
+                        ,BigDecimal.ROUND_HALF_UP);
+        return new BookingReportDto(totalConfirmedBooking,totalRevenueOfConfirmedBooking,avgRevenue);
+    }
+
     public  boolean hasBookingExpired(Booking booking){
         return booking.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
-    }
-    public User getCurrentUser(){
-        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
 

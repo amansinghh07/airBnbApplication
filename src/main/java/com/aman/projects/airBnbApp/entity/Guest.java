@@ -10,6 +10,10 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Table(name = "guest",
+        uniqueConstraints = {@UniqueConstraint(
+        columnNames = {"user_id","name","age","gender"}
+)})
 public class Guest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

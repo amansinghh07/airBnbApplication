@@ -10,7 +10,7 @@ import java.util.Set;
 @Data
 public class GuestDto {
     private Long id;
-    private User user;
+    private Long userId;
     private String name;
     private Gender gender;
     private Integer age;

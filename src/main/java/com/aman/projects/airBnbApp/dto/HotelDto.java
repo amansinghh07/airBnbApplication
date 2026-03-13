@@ -2,6 +2,7 @@ package com.aman.projects.airBnbApp.dto;
 
 import com.aman.projects.airBnbApp.entity.HotelContactInfo;
 import com.aman.projects.airBnbApp.entity.Room;
+import com.aman.projects.airBnbApp.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class HotelDto {
     private String[] amenities;
     private HotelContactInfo hotelContactInfo;
     private boolean isActive;
+    private User owner;
 //    @OneToMany(mappedBy = "hotel",fetch = FetchType.LAZY)
 //    private List<Room> roomList;
 }
